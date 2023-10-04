@@ -1,0 +1,117 @@
+Ian VanGordon
+10/3/2023
+Deduper
+
+Objectives:
+
+    The objective of this assingment is to remove duplicated DNA sequences from RNA-seq after alignment.
+    The input file will be a sam file and the data will be single end read sequences.
+
+
+
+Background:
+
+    Samfiles:
+
+        Found information about sams at https://en.wikipedia.org/wiki/SAM_(file_format).
+        To reference back to, here is a table containing the column information in a sam file:
+
+            Col	Field	Type	Brief description
+            1	QNAME	String	Query template NAME
+            2	FLAG	Int	bitwise FLAG
+            3	RNAME	String	References sequence NAME
+            4	POS	Int	1- based leftmost mapping POSition
+            5	MAPQ	Int	MAPping Quality
+            6	CIGAR	String	CIGAR string
+            7	RNEXT	String	Ref. name of the mate/next read
+            8	PNEXT	Int	Position of the mate/next read
+            9	TLEN	Int	observed Template LENgth
+            10	SEQ	String	segment SEQuence
+            11	QUAL	String	ASCII of Phred-scaled base QUALity+33
+
+
+        Bitwise flag table:
+
+            Integer	Binary	Description (Paired Read Interpretation)
+            1	000000000001	template having multiple templates in sequencing (read is paired)
+            2	000000000010	each segment properly aligned according to the aligner (read mapped in proper pair)
+            4	000000000100	segment unmapped (read1 unmapped)
+            8	000000001000	next segment in the template unmapped (read2 unmapped)
+            16	000000010000	SEQ being reverse complemented (read1 reverse complemented)
+            32	000000100000	SEQ of the next segment in the template being reverse complemented (read2 reverse complemented)
+            64	000001000000	the first segment in the template (is read1)
+            128	000010000000	the last segment in the template (is read2)
+            256	000100000000	not primary alignment
+            512	001000000000	alignment fails quality checks
+            1024	010000000000	PCR or optical duplicate
+            2048	100000000000	supplementary alignment (e.g. aligner specific, could be a portion of a split read or a tied region)
+
+
+        CIGAR strings:
+
+            Op	Description
+            M 	Match (alignment column containing two letters). This could contain two different letters (mismatch) or two identical letters. USEARCH generates CIGAR strings containing Ms rather than X's and ='s (see below).
+            D 	Deletion (gap in the target sequence).
+            I 	Insertion (gap in the query sequence). 
+            S 	Segment of the query sequence that does not appear in the alignment. This is used with soft clipping, where the full-length query sequence is given (field 10 in the SAM record). In this case, S operations specify segments at the start and/or end of the query that do not appear in a local alignment.
+            H 	Segment of the query sequence that does not appear in the alignment. This is used with hard clipping, where only the aligned segment of the query sequences is given (field 10 in the SAM record). In this case, H operations specify segments at the start and/or end of the query that do not appear in the SAM record.
+            = 	Alignment column containing two identical letters. USEARCH can read CIGAR strings using this operation, but does not generate them.
+            X 	Alignment column containing a mismatch, i.e. two different letters. USEARCH can read CIGAR strings using this operation, but does not generate them.
+
+
+        Additional notes:
+
+            The mapping position is the left most position on the plus strand.
+            Position mappings are the first matching basepair in the sequence compared to the reference genome.
+
+
+
+
+Psuedocode:
+
+    Things that will need to be accounted for is soft clipping, the bitwise flag, starting postion (and chrom/scaffold), CIGAR strings.
+    Additionally, this must be done using as little ram as possible. To combat this I will have an output file open for writing the entire time.
+
+    Here is the psuedocode:
+
+        import argparse and possibly gzip
+
+        argparse arguments: input sam, input UMI data, output file (kept alignments), include help documentation
+
+        def BitwiseInterpreter(integer, bitwiseflag):
+            '''This function takes a bitwise flag and an int of interest. Returns a true or false using if-else statement comparing integer and bitwiseflag.'''
+
+            input: (4, 64)
+            return: false
+            input: (4, 6)
+            return: true
+
+        def StartPosCalc(CIGARstring, startPos):
+            '''This function takes a CIGAR string and starting position from a sam file header and determines the start position for that alignment on the genome to compare possible duplicates to each other. The function will parse the CIGAR string and return the actual start
+            int.'''
+
+            input: (2S12M, 102)
+            return: 100
+            input: (14M, 102)
+            return: 102
+
+        Declare dictionary for UMIs and counts (this is not a required)
+        add a key for unknown UMIs
+
+        Open UMI file (close file after)
+        Save all 96 UMIs into dictionary
+
+        Open input sam and output files
+            Initiate for-loop when lines do not start with '@'
+                use split function and save variables for bitwise flag, CIGAR string, qname, bp pos, and rname as lines loop
+                evaluate bitwise flag, CIGAR string, qname, bp pos using above functions and each time an umi is seen it is added to count dictionary
+                If UMI is not recognized, it is immediatly thrown out and count of one added to unknown in dictionary
+                    Use conditional statement to compare variables above once the data from two alignments is read in, if start position and UMIs match, the alignment and seq is put into the discard output, else is added to kept output (the first of each read will be kept)
+
+
+
+
+VanGordon_deduper.py:
+
+    I was able to get BitwiseInterpreter to function correctly.
+    StartPosCalc is also working properly.
