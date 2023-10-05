@@ -115,3 +115,8 @@ VanGordon_deduper.py:
 
     I was able to get BitwiseInterpreter to function correctly.
     StartPosCalc is also working properly.
+
+    I currently have the script able to compare two lines from the sam file correctly. The challenge now is dealing with the strandedness. 
+    I asked Leslie if UMIs from minus strands would be reversecomplimented. Leslie confirmed that the UMIs for this data is not reverse complimented.
+
+    The next big challenge will be dealing with strandedness.

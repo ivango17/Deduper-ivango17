@@ -40,6 +40,7 @@ def StartPosCalc(CIGARstring, startPos):
 #This dictionary will serve to hold all of the UMI seqs as well as their counts, an unknow counter will also be added
 UMIcount = {}
 UMIcount["Unknown"] = 0
+UMIcount["duplicate"] = 0
 
 
 # This code block is to save the UMI seqs into a dictionary
@@ -54,8 +55,71 @@ with open("./STL96.txt") as umis:
             UMIcount[UMI] = 0
 
 
+#Here are variables that need to be initialized prior to the loop
+
+curQName = 0
+curBitFlag = 0
+curCIGAR = 0
+curStart = 0
+curUMI = 0
+curLine = 0
+
 # sam = open(sam)
 sam = open("./test.sam")
+output = open("./trash", "w")
+
+
+for line in sam:
+
+    #First conditional statement is to avoid extra sam data
+
+    if line[0] != "@":
+
+        #This series of variable assignments is for setting up the rest of the loop for comparison and file writing
+        #The first block saves the previous line info while the second overwrites for the new "current" line
+
+        preQName = curQName
+        preBitFlag = curBitFlag
+        preUMI = curUMI
+        preStart = curStart
+        preLine = curLine
+
+
+        line = line.strip()
+        curLine = line.split('\t')
+
+        curQName = curLine[0]
+        curQName = curQName.split(":")
+        curUMI = curQName.pop()
+
+        curBitFlag = curLine[1]
+        curCIGAR = curLine[5]
+        curStart = StartPosCalc(curCIGAR, int(curLine[3]))
+        
+        if ((curUMI == preUMI) and (curStart == preStart)) or (curUMI not in UMIcount):
+            if curUMI in UMIcount:
+                UMIcount["duplicate"] += 1
+            else:
+                UMIcount["unknown"] += 1
+
+        else:
+            UMIcount[curUMI] += 1
+            output.write(f"{line}\n")
+
+
+
+
+
+
+
+
+
+
+
+    else:
+        output.write(line)
+
+    
 
 
 sam.close()
