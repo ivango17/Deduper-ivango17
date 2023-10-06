@@ -5,7 +5,7 @@ Deduper
 Objectives:
 
     The objective of this assingment is to remove duplicated DNA sequences from RNA-seq after alignment.
-    The input file will be a sam file and the data will be single end read sequences.
+    The input file will be a sorted (via sam tools) sam file and the data will be single end read sequences.
 
 
 
@@ -111,6 +111,22 @@ Psuedocode:
 
 
 
+Sam-tools sorting:
+
+    environment: bgmp_star
+    sam-tools version: 1.9
+
+    For the python script below to function properly, the sam file need to be sorted by RNAME, then start position.
+    Still need to find out if the input or output will be compressed.
+    Sam tools sort defaults to sorting by RNAME, then POS which as far as I know is exactly what the python script will need. I will need to verify this.
+
+    command:
+
+        $samtools sort <input> -o <output>
+
+
+
+
 VanGordon_deduper.py:
 
     I was able to get BitwiseInterpreter to function correctly.
@@ -119,4 +135,4 @@ VanGordon_deduper.py:
     I currently have the script able to compare two lines from the sam file correctly. The challenge now is dealing with the strandedness. 
     I asked Leslie if UMIs from minus strands would be reversecomplimented. Leslie confirmed that the UMIs for this data is not reverse complimented.
 
-    The next big challenge will be dealing with strandedness.
+    The next big challenge will be dealing with strandedness. My function does not currently take into account whether or not there is soft clipping at the end of a cigar string which would matter for reads that align to the minus strand. Still unsure.
