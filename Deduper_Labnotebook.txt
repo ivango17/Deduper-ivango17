@@ -72,6 +72,8 @@ Psuedocode:
     Things that will need to be accounted for is soft clipping, the bitwise flag, starting postion (and chrom/scaffold), CIGAR strings.
     Additionally, this must be done using as little ram as possible. To combat this I will have an output file open for writing the entire time.
 
+    As part of this portion of the project I wrote a test file generator that takes the provided test file and creates new sam entries such as strandedness, wrong UMIs, and duplicates (testGen.py).
+
     Here is the psuedocode:
 
         import argparse and possibly gzip
@@ -119,6 +121,8 @@ Sam-tools sorting:
     For the python script below to function properly, the sam file need to be sorted by RNAME, then start position.
     Still need to find out if the input or output will be compressed.
     Sam tools sort defaults to sorting by RNAME, then POS which as far as I know is exactly what the python script will need. I will need to verify this.
+
+    Info on samtools sort found at: https://www.htslib.org/doc/samtools-sort.html#:~:text=By%20default%2C%20samtools%20tries%20to,be%20deduced%2C%20bam%20is%20selected.
 
     command:
 

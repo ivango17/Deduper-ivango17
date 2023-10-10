@@ -4,6 +4,8 @@ To sequence RNA-seq data, cDNA must be synthesized and amplified. During this, o
 One way to combat this is through UMIs. These can be used to remove duplicate seqeunces due to PCR amplifacation. Additionally, to locate duplicates, the position of the sequence must be known on the genome. Due to soft clipping, this may not be straight forward but the CIGAR 
 string will contain information regarding wether or not the reads are soft clipped as the program will be taking a sam file as an input. The input file is from single end seq. The input sam will also be in order. Below is the psuedocode for this program.
 
+Test Input: ./newTest.sam
+Test Output: ./newTestOutput.sam
 
 import argparse and possibly gzip
 
@@ -12,7 +14,7 @@ argparse arguments: input sam, input UMI data, output file (kept alignments), in
 
 
 def BitwiseInterpreter(integer, bitwiseflag):
-    '''This function takes a bitwise flag and an int of interest. Returns a true or false using if-else statement comparing integer and bitwiseflag.'''
+    '''This function takes a bitwise flag and an int of interest. Returns a true or false using if-el   se statement comparing integer and bitwiseflag.'''
 
     input: (4, 64)
     return: false
@@ -41,6 +43,7 @@ Open input sam and output files
         use split function and save variables for bitwise flag, CIGAR string, qname, bp pos, and rname as lines loop
         evaluate bitwise flag, CIGAR string, qname, bp pos using above functions and each time an umi is seen it is added to count dictionary
         If UMI is not recognized, it is immediatly thrown out and count of one added to unknown in dictionary
+        Determine strandedness with bitwise flag
             Use conditional statement to compare variables above once the data from two alignments is read in, if start position and UMIs match, the alignment and seq is put into the discard output, else is added to kept output (the first of each read will be kept)
 
 

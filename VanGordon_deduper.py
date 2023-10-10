@@ -65,8 +65,8 @@ curUMI = 0
 curLine = 0
 
 # sam = open(sam)
-sam = open("./test.sam")
-output = open("./trash", "w")
+sam = open("./newTest.sam")
+output = open("./newTestOutput.sam", "w")
 
 
 for line in sam:
@@ -92,15 +92,15 @@ for line in sam:
         curQName = curQName.split(":")
         curUMI = curQName.pop()
 
-        curBitFlag = curLine[1]
+        curBitFlag = int(curLine[1])
         curCIGAR = curLine[5]
         curStart = StartPosCalc(curCIGAR, int(curLine[3]))
         
-        if ((curUMI == preUMI) and (curStart == preStart)) or (curUMI not in UMIcount):
+        if ((curUMI == preUMI) and (curStart == preStart) and (BitwiseInterpreter(16, curBitFlag) == BitwiseInterpreter(16, preBitFlag))) or (curUMI not in UMIcount):
             if curUMI in UMIcount:
                 UMIcount["duplicate"] += 1
             else:
-                UMIcount["unknown"] += 1
+                UMIcount["Unknown"] += 1
 
         else:
             UMIcount[curUMI] += 1
