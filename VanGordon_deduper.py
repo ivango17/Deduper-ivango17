@@ -3,6 +3,7 @@
 # The purpose of this script is to take a sam file and remove all PCR replicates
 
 import argparse
+import re
 
 # def get_args():
 #     parser = argparse.ArgumentParser(description="This program generates an output file from a sam file without PCR replicates.")
@@ -24,17 +25,24 @@ def BitwiseInterpreter(val, bitflag):
     else:
         return False
 
-def StartPosCalc(CIGARstring, startPos):
+def StartPosCalc(CIGARstring, startPos, minusStrand = False):
     '''This function takes a CIGAR string and starting position from a sam file header and determines the start position for that alignment on the genome to compare possible duplicates to each other. The function will parse the CIGAR string and return the actual start int.'''
-    if 'S' in CIGARstring:
-        for i in range(len(CIGARstring)):
-            if CIGARstring[i] == 'S':
-                clipped = int(CIGARstring[0:i])
-                break
-        return startPos - clipped
+    cString = re.findall(r'(\d+)(\w)', CIGARstring)
+    
+    if minusStrand == False:
+
+        if cString[0][1] == 'S':
+            return startPos - int(cString[0][0])
+        else:
+            return startPos
 
     else:
-        return startPos
+        bpCounter = 0
+        for i in range(len(cString)):
+            if (i != 0) or (cString[0][1] != 'S'):
+                bpCounter += int(cString[i][0])
+                
+        return startPos + bpCounter
 
 
 #This dictionary will serve to hold all of the UMI seqs as well as their counts, an unknow counter will also be added
@@ -94,7 +102,9 @@ for line in sam:
 
         curBitFlag = int(curLine[1])
         curCIGAR = curLine[5]
-        curStart = StartPosCalc(curCIGAR, int(curLine[3]))
+        curStart = StartPosCalc(curCIGAR, int(curLine[3]), BitwiseInterpreter(16, curBitFlag))
+
+        #The below conditional statement is checking wether or not the alignment is valid. If not, it will not be writted to the new file.
         
         if ((curUMI == preUMI) and (curStart == preStart) and (BitwiseInterpreter(16, curBitFlag) == BitwiseInterpreter(16, preBitFlag))) or (curUMI not in UMIcount):
             if curUMI in UMIcount:
@@ -105,16 +115,6 @@ for line in sam:
         else:
             UMIcount[curUMI] += 1
             output.write(f"{line}\n")
-
-
-
-
-
-
-
-
-
-
 
     else:
         output.write(line)
