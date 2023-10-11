@@ -120,7 +120,7 @@ Sam-tools sorting:
 
     For the python script below to function properly, the sam file need to be sorted by RNAME, then start position.
     Still need to find out if the input or output will be compressed.
-    Sam tools sort defaults to sorting by RNAME, then POS which as far as I know is exactly what the python script will need. I will need to verify this.
+    Sam tools sort defaults to sorting by RNAME, then POS which as far as I know is exactly what the python script will need. I will need to verify this. (Leslie verified)
 
     Info on samtools sort found at: https://www.htslib.org/doc/samtools-sort.html#:~:text=By%20default%2C%20samtools%20tries%20to,be%20deduced%2C%20bam%20is%20selected.
 
@@ -140,3 +140,10 @@ VanGordon_deduper.py:
     I asked Leslie if UMIs from minus strands would be reversecomplimented. Leslie confirmed that the UMIs for this data is not reverse complimented.
 
     The next big challenge will be dealing with strandedness. My function does not currently take into account whether or not there is soft clipping at the end of a cigar string which would matter for reads that align to the minus strand. Still unsure.
+
+    Talked to Leslie, for reverse aligned strands, I will need to find the right most position to compare possible PCR duplicate alignments to.
+    To solve this I may add a function to StartPosCalc() to account for this.
+
+    I have successfully incorperated strandedness into the python script! Done via StartPosCalc() and BitwiseInterpreter().
+
+    I believe that the script is up and running. Now I am waiting for the file path to the sam file.
