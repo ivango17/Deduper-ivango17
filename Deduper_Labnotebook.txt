@@ -141,9 +141,57 @@ VanGordon_deduper.py:
 
     The next big challenge will be dealing with strandedness. My function does not currently take into account whether or not there is soft clipping at the end of a cigar string which would matter for reads that align to the minus strand. Still unsure.
 
-    Talked to Leslie, for reverse aligned strands, I will need to find the right most position to compare possible PCR duplicate alignments to.
+    Talked to Leslie, for reverse aligned strands, I will need to find the right most position to compare possible PCR duplicate alignments to. This involves added "all" of the numbers in the cigar string to the start position aside from left softclipping.
     To solve this I may add a function to StartPosCalc() to account for this.
 
     I have successfully incorperated strandedness into the python script! Done via StartPosCalc() and BitwiseInterpreter().
 
     I believe that the script is up and running. Now I am waiting for the file path to the sam file.
+
+    Next, I would like to add summary files to be outputted. 
+
+    I believe the filepath for the sam is: /projects/bgmp/shared/deduper/C1_SE_uniqAlign.sam.
+
+
+
+
+Deduper.sh:
+
+    I wrote a shell script with the following parameters:
+
+        #SBATCH --account=bgmp                    
+        #SBATCH --partition=compute               
+        #SBATCH --cpus-per-task=8                 
+        #SBATCH --mem=32GB                        
+
+        conda activate base
+
+        /usr/bin/time ./VanGordon_deduper.py -f "./C1_SE_uniqAlign.sorted.sam" -o "./DeduplicatedC1_SE_uniqAlign.sam" -u "./STL96.txt" -s "./SummaryDeduplicated.txt"
+
+    slurm-658470.out:
+
+        54.59user 4.67system 1:00.09elapsed 98%CPU (0avgtext+0avgdata 14704maxresident)k
+        0inputs+0outputs (0major+3136minor)pagefaults 0swaps
+
+
+
+
+Output:
+
+    The script seems to have worked! 
+
+    Summary of the summary file:
+
+        Summary information about deduplicated <_io.TextIOWrapper name='./C1_SE_uniqAlign.sorted.sam' mode='r' encoding='UTF-8'>
+
+        Alignments before processing: 18186409
+        Alignments after processing: 17815093
+        Precent surviving: 97.9582775247164%
+
+        UMI	Count
+        Unknown	0	0.0%
+        duplicate	371316	0.020842776403131882%
+
+    Input file count: 18186474 C1_SE_uniqAlign.sorted.sam
+    Output file count: 17815158 DeduplicatedC1_SE_uniqAlign.sam
+    Difference: 371316 which matches the number of duplicates that I had.

@@ -5,18 +5,20 @@
 import argparse
 import re
 
-# def get_args():
-#     parser = argparse.ArgumentParser(description="This program generates an output file from a sam file without PCR replicates.")
-#     parser.add_argument("-f", "--filename", help="What is the filepath for the sam file to be read", type=str)
-#     parser.add_argument("-o", "--outputfile", help="What do you want this file to be called", type=str)
-#     parser.add_argument("-u", "--umifile", help="What is the filepath for the file that contains all of the UMIs", type=str)
-#     return parser.parse_args()
+def get_args():
+    parser = argparse.ArgumentParser(description="This program generates an output file from a sam file without PCR replicates.")
+    parser.add_argument("-f", "--filename", help="What is the filepath for the sam file to be read", type=str)
+    parser.add_argument("-o", "--outputfile", help="What do you want this file to be called", type=str)
+    parser.add_argument("-u", "--umifile", help="What is the filepath for the file that contains all of the UMIs", type=str)
+    parser.add_argument("-s", "--summaryfile", help="What should the summary file be called?", type=str)
+    return parser.parse_args()
 
-# args = get_args()
+args = get_args()
 
-# sam = args.filename
-# output = args.outputfile
-# umis = args.umifile
+sam = args.filename
+output = args.outputfile
+umis = args.umifile
+summary = args.summaryfile
 
 def BitwiseInterpreter(val, bitflag):
     '''This function takes a bitwise flag and an int of interest. Returns a true or false using if-else statement comparing integer and bitwiseflag.'''
@@ -53,7 +55,7 @@ UMIcount["duplicate"] = 0
 
 # This code block is to save the UMI seqs into a dictionary
 # with open(umis) as umis:
-with open("./STL96.txt") as umis:
+with open(umis) as umis:
     while True:
         UMI = umis.readline().strip()
 
@@ -72,9 +74,12 @@ curStart = 0
 curUMI = 0
 curLine = 0
 
-# sam = open(sam)
-sam = open("./newTest.sam")
-output = open("./newTestOutput.sam", "w")
+sam = open(sam)
+output = open(output, "w")
+summary = open(summary, "w")
+
+preLineCount = -1
+postLineCount = -1
 
 
 for line in sam:
@@ -82,6 +87,8 @@ for line in sam:
     #First conditional statement is to avoid extra sam data
 
     if line[0] != "@":
+
+        preLineCount += 1
 
         #This series of variable assignments is for setting up the rest of the loop for comparison and file writing
         #The first block saves the previous line info while the second overwrites for the new "current" line
@@ -115,12 +122,22 @@ for line in sam:
         else:
             UMIcount[curUMI] += 1
             output.write(f"{line}\n")
+            postLineCount += 1
 
     else:
         output.write(line)
 
-    
+summary.write(f"Summary information about deduplicated {sam}\n\n")
+summary.write(f"Alignments before processing: {preLineCount}\n")
+summary.write(f"Alignments after processing: {postLineCount}\n")
+summary.write(f"Precent surviving: {100 * (postLineCount/preLineCount)}%\n\n")
+summary.write(f"UMI\tCount\n")
+
+for key in UMIcount:
+    summary.write(f"{key}\t{UMIcount[key]}\t{UMIcount[key]/postLineCount}%\n")
 
 
 sam.close()
+output.close()
+summary.close()
 
