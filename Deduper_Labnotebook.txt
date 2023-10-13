@@ -195,3 +195,9 @@ Output:
     Input file count: 18186474 C1_SE_uniqAlign.sorted.sam
     Output file count: 17815158 DeduplicatedC1_SE_uniqAlign.sam
     Difference: 371316 which matches the number of duplicates that I had.
+
+	To confirm my result and that there were no unknown UMIs, I ran this bash command:
+
+		grep -v "^@" /projects/bgmp/shared/deduper/C1_SE_uniqAlign.sam | cut -f1 | grep -oE "[ACGT]{8}" | sort | uniq -c | wc -l
+
+		This confirmed that there were only 96 UMIs in the original sam file.
