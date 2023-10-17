@@ -196,8 +196,17 @@ Output:
     Output file count: 17815158 DeduplicatedC1_SE_uniqAlign.sam
     Difference: 371316 which matches the number of duplicates that I had.
 
-	To confirm my result and that there were no unknown UMIs, I ran this bash command:
+    To confirm my result and that there were no unknown UMIs, I ran this bash command:
 
-		grep -v "^@" /projects/bgmp/shared/deduper/C1_SE_uniqAlign.sam | cut -f1 | grep -oE "[ACGT]{8}" | sort | uniq -c | wc -l
+        grep -v "^@" /projects/bgmp/shared/deduper/C1_SE_uniqAlign.sam | cut -f1 | grep -oE "[ACGT]{8}" | sort | uniq -c | wc -l
 
-		This confirmed that there were only 96 UMIs in the original sam file.
+        This confirmed that there were only 96 UMIs in the original sam file.
+
+        I additionally ran this bash command to see the max number of duplicates that you could get when just considering the UMI, bitflag, and startposition: 
+        
+            grep -v "^@" /projects/bgmp/shared/deduper/C1_SE_uniqAlign.sam | cut -f 1,2,4 | grep -Eo "[ATGC]{8}\s[0-9]+\s[0-9]+" | sort | uniq -c | cut -f1 | grep -Eo "[0-9]+" | awk '{if($1>1){sum+=$1-1}}END{print sum}'
+
+            The most there could be: 4252134
+
+
+
