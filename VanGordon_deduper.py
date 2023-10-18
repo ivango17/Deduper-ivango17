@@ -4,9 +4,10 @@
 
 import argparse
 import re
+import pysam
 
 def get_args():
-    parser = argparse.ArgumentParser(description="This program generates an output file from a sam file without PCR replicates.")
+    parser = argparse.ArgumentParser(description="This program generates an output file from a sam file without PCR replicates. This script does not take hard clipping into account.")
     parser.add_argument("-f", "--filename", help="What is the filepath for the sam file to be read", type=str)
     parser.add_argument("-o", "--outputfile", help="What do you want this file to be called", type=str)
     parser.add_argument("-u", "--umifile", help="What is the filepath for the file that contains all of the UMIs", type=str)
@@ -50,7 +51,7 @@ def StartPosCalc(CIGARstring, startPos, minusStrand = False):
 #This dictionary will serve to hold all of the UMI seqs as well as their counts, an unknow counter will also be added
 UMIcount = {}
 UMIcount["Unknown"] = 0
-UMIcount["duplicate"] = 0
+UMIcount["Duplicate"] = 0
 
 
 # This code block is to save the UMI seqs into a dictionary
@@ -65,6 +66,33 @@ with open(umis) as umis:
             UMIcount[UMI] = 0
 
 
+# This loop adjusts the start position for every read in the sam file
+
+sam = open(sam)
+samAdj = open("./Adjusted.sam", "w")
+
+for line in sam:
+
+    if line[0] != "@":
+
+        line = line.strip('\n')
+        line = line.split()
+        adjPos = StartPosCalc(line[5], int(line[3]), BitwiseInterpreter(16, int(line[1])))
+        line[3] = adjPos
+        samAdj.write(f"{line[0]}\t{line[1]}\t{line[2]}\t{line[3]}\t{line[4]}\t{line[5]}\t{line[6]}\t{line[7]}\t{line[8]}\t{line[9]}\t{line[10]}\n")
+
+    else:
+        samAdj.write(f"{line}")
+
+sam.close()
+samAdj.close()
+
+
+# This code block is to sort the sam file with adjusted start positions
+
+sortedSam = pysam.sort("-o", "sorted.sam", "Adjusted.sam")
+
+
 #Here are variables that need to be initialized prior to the loop
 
 curQName = 0
@@ -73,16 +101,21 @@ curCIGAR = 0
 curStart = 0
 curUMI = 0
 curLine = 0
+curChrom = 0
 
-sam = open(sam)
+duplicateHunter = {}
+
+
 output = open(output, "w")
 summary = open(summary, "w")
+duplicates = open("./Duplicates.sam", "w")
+sortedSam = open("./sorted.sam")
 
 preLineCount = -1
 postLineCount = -1
 
 
-for line in sam:
+for line in sortedSam:
 
     #First conditional statement is to avoid extra sam data
 
@@ -98,6 +131,7 @@ for line in sam:
         preUMI = curUMI
         preStart = curStart
         preLine = curLine
+        preChrom = curChrom
 
 
         line = line.strip()
@@ -107,37 +141,68 @@ for line in sam:
         curQName = curQName.split(":")
         curUMI = curQName.pop()
 
-        curBitFlag = int(curLine[1])
+        curBitFlag = BitwiseInterpreter(16, int(curLine[1]))
         curCIGAR = curLine[5]
-        curStart = StartPosCalc(curCIGAR, int(curLine[3]), BitwiseInterpreter(16, curBitFlag))
+        curStart = curLine[3]
+        curChrom = curLine[2]
 
-        #The below conditional statement is checking wether or not the alignment is valid. If not, it will not be writted to the new file.
+
+        # The statement below wipes the comparison dictionary if the current chromosome changes
+
+        if curChrom != preChrom:
+
+            duplicateHunter.clear()
+
         
-        if ((curUMI == preUMI) and (curStart == preStart) and (BitwiseInterpreter(16, curBitFlag) == BitwiseInterpreter(16, preBitFlag))) or (curUMI not in UMIcount):
+        # The below tuple will be used as a key for duplicateHunter
+
+        currentSet = (curUMI, curBitFlag, curStart, curChrom)
+
+
+        # This conditional statement compares currentset to the duplicateHunter dictionary to determine if the current line is a PCR duplicate
+
+        if currentSet not in duplicateHunter:
+
+            duplicateHunter[currentSet] = 1
+            UMIcount[curUMI] += 1
+            postLineCount += 1
+
+            output.write(f"{line}")
+
+        else:
+            duplicates.write(f"{line}")
+
             if curUMI in UMIcount:
-                UMIcount["duplicate"] += 1
+                UMIcount["Duplicate"] += 1
             else:
                 UMIcount["Unknown"] += 1
 
-        else:
-            UMIcount[curUMI] += 1
-            output.write(f"{line}\n")
-            postLineCount += 1
 
     else:
         output.write(line)
+        duplicates.write(line)
+
+
+# Everything below is simply generating the summary file.
 
 summary.write(f"Summary information about deduplicated {sam}\n\n")
 summary.write(f"Alignments before processing: {preLineCount}\n")
 summary.write(f"Alignments after processing: {postLineCount}\n")
 summary.write(f"Precent surviving: {100 * (postLineCount/preLineCount)}%\n\n")
+
+propDup = (UMIcount["Duplicate"]*100)/preLineCount
+
+summary.write(f"Duplicate\t{propDup}% of original alignements were duplicates\n\n")
 summary.write(f"UMI\tCount\n")
 
+del UMIcount["Duplicate"]
+
 for key in UMIcount:
-    summary.write(f"{key}\t{UMIcount[key]}\t{UMIcount[key]/postLineCount}%\n")
+    summary.write(f"{key}\t{UMIcount[key]}\t{(100*UMIcount[key])/postLineCount}%\n")
 
 
-sam.close()
+sortedSam.close()
 output.close()
 summary.close()
+duplicates.close()
 

@@ -49,14 +49,19 @@ Background:
 
         CIGAR strings:
 
-            Op	Description
-            M 	Match (alignment column containing two letters). This could contain two different letters (mismatch) or two identical letters. USEARCH generates CIGAR strings containing Ms rather than X's and ='s (see below).
-            D 	Deletion (gap in the target sequence).
-            I 	Insertion (gap in the query sequence). 
-            S 	Segment of the query sequence that does not appear in the alignment. This is used with soft clipping, where the full-length query sequence is given (field 10 in the SAM record). In this case, S operations specify segments at the start and/or end of the query that do not appear in a local alignment.
-            H 	Segment of the query sequence that does not appear in the alignment. This is used with hard clipping, where only the aligned segment of the query sequences is given (field 10 in the SAM record). In this case, H operations specify segments at the start and/or end of the query that do not appear in the SAM record.
-            = 	Alignment column containing two identical letters. USEARCH can read CIGAR strings using this operation, but does not generate them.
-            X 	Alignment column containing a mismatch, i.e. two different letters. USEARCH can read CIGAR strings using this operation, but does not generate them.
+           Op BAM Description Consumes
+        query
+        Consumes
+        reference
+        M 0 alignment match (can be a sequence match or mismatch) yes yes
+        I 1 insertion to the reference yes no
+        D 2 deletion from the reference no yes
+        N 3 skipped region from the reference no yes
+        S 4 soft clipping (clipped sequences present in SEQ) yes no
+        H 5 hard clipping (clipped sequences NOT present in SEQ) no no
+        P 6 padding (silent deletion from padded reference) no no
+        = 7 sequence match yes yes
+        X 8 sequence mismatch yes yes
 
 
         Additional notes:
@@ -202,11 +207,29 @@ Output:
 
         This confirmed that there were only 96 UMIs in the original sam file.
 
-        I additionally ran this bash command to see the max number of duplicates that you could get when just considering the UMI, bitflag, and startposition: 
+        I additionally ran this bash command to see the rough number of duplicates that you could get when just considering the UMI, bitflag, and startposition: 
         
             grep -v "^@" /projects/bgmp/shared/deduper/C1_SE_uniqAlign.sam | cut -f 1,2,4 | grep -Eo "[ATGC]{8}\s[0-9]+\s[0-9]+" | sort | uniq -c | cut -f1 | grep -Eo "[0-9]+" | awk '{if($1>1){sum+=$1-1}}END{print sum}'
 
-            The most there could be: 4252134
+            I should get somewhere in the relm of: 4252134
+
+        After going to office hours, Leslie mentioned that we should not be including insertions in the cigar string.
+        Mention that does not account for hard clipping in argparse help.
+        Need to adjust start position before sorting. I will write another script for this.
+
+        After office hours today I think that I am going to write two python scripts:
+
+            1) This one adds the adjusted start position to a new sam file. After this, I will use samtools sort to sort the file.
+            2) The second script will be the actual deduper script.
+
+        ACTUALLY, I will try to us pySam to sort the sam file in the python script.
+
+        It worked! Here is the slurm.out:
+
+            114.13user 5.71system 2:03.26elapsed 97%CPU (0avgtext+0avgdata 961616maxresident)k
+            0inputs+16outputs (0major+773812minor)pagefaults 0swaps
+
+        Roughly 25% of the alignments from the original file were duplicates.
 
 
 
