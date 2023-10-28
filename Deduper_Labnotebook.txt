@@ -231,5 +231,19 @@ Output:
 
         Roughly 25% of the alignments from the original file were duplicates.
 
+        I had to write another version of the script with out using PySam. 
+
+            This time I added optional options for summary files and duplicate files.
+
+        This assignment is now complete. I may revisit to add option for PE alignments.
+
+        Final output:
+
+            Deduplication Complete!
+            59.75user 5.57system 1:06.38elapsed 98%CPU (0avgtext+0avgdata 620844maxresident)k
+            0inputs+0outputs (0major+625136minor)pagefaults 0swaps
+
+        The new version of the file is identical to the previous version via using $diff on the output and summary files.
+
 
 

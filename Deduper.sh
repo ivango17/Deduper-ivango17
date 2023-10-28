@@ -8,4 +8,4 @@
 
 conda activate bgmp_star
 
-/usr/bin/time ./VanGordon_deduper.py -f "./C1_SE_uniqAlign.sorted.sam" -o "./DeduplicatedC1_SE_uniqAlign.sam" -u "./STL96.txt" -s "./SummaryDeduplicated.txt"
+/usr/bin/time ./VanGordon_deduper.py -f "./C1_SE_uniqAlign.sorted.sam" -o "./results/DeduplicatedC1_SE_uniqAlign.sam" -u "./STL96.txt" -s "./results/SummaryDeduplicated.txt" -d "./results/Duplicates.sam"
