@@ -68,7 +68,7 @@ def StartPosCalc(CIGARstring, startPos, minusStrand = False):
     else:
         bpCounter = 0
         for i in range(len(cString)):
-            if (i != 0) or (cString[0][1] != 'S'):
+            if ((i != 0) or (cString[0][1] != 'S')) and (cString[i][1] != "I"):
                 bpCounter += int(cString[i][0])
                 
         return startPos + bpCounter
@@ -162,7 +162,7 @@ for line in sortedSam:
             UMIcount[curUMI] += 1
             postLineCount += 1
 
-            output.write(f"{line}")
+            output.write(f"{line}\n")
 
         else:
 
@@ -176,8 +176,8 @@ for line in sortedSam:
 
 
     elif args.duplicatesfile != None:
-        output.write(line)
-        duplicatesFile.write(line)
+        output.write(f"{line}")
+        duplicatesFile.write(f"{line}")
 
     else:
         output.write(line)
@@ -198,7 +198,9 @@ if args.summaryfile != None:
     summary.write(f"Precent surviving: {100 * (postLineCount/preLineCount)}%\n\n")
 
     propDup = (UMIcount["Duplicate"]*100)/preLineCount
+    numDup = UMIcount["Duplicate"]
 
+    summary.write(f"Number of alignments that were PCR duplicates: {numDup}\n")
     summary.write(f"Duplicate\t{propDup}% of original alignments were duplicates\n\n")
     summary.write(f"UMI\tCount\n")
 

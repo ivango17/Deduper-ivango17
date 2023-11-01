@@ -240,10 +240,81 @@ Output:
         Final output:
 
             Deduplication Complete!
-            59.75user 5.57system 1:06.38elapsed 98%CPU (0avgtext+0avgdata 620844maxresident)k
-            0inputs+0outputs (0major+625136minor)pagefaults 0swaps
+            Command being timed: "./VanGordon_deduper.py -f ./C1_SE_uniqAlign.sorted.sam -o ./results/DeduplicatedC1_SE_uniqAlign.sam -u ./STL96.txt -s ./results/SummaryDeduplicated.txt -d ./results/Duplicates.sam"
+            User time (seconds): 60.10
+            System time (seconds): 3.34
+            Percent of CPU this job got: 98%
+            Elapsed (wall clock) time (h:mm:ss or m:ss): 1:04.25
+            Average shared text size (kbytes): 0
+            Average unshared data size (kbytes): 0
+            Average stack size (kbytes): 0
+            Average total size (kbytes): 0
+            Maximum resident set size (kbytes): 620896
+            Average resident set size (kbytes): 0
+            Major (requiring I/O) page faults: 0
+            Minor (reclaiming a frame) page faults: 620827
+            Voluntary context switches: 1281
+            Involuntary context switches: 90
+            Swaps: 0
+            File system inputs: 0
+            File system outputs: 0
+            Socket messages sent: 0
+            Socket messages received: 0
+            Signals delivered: 0
+            Page size (bytes): 4096
+            Exit status: 0
 
         The new version of the file is identical to the previous version via using $diff on the output and summary files.
 
+        To count chromosome alignments:
+
+            grep -v "^@" DeduplicatedC1_SE_uniqAlign.sam | cut -f3 | sort | uniq -c
+
+             
+            
+697508
+2787018
+547615
+589839
+562160
+510818
+1113183
+576463
+627488
+564903
+1220389
+359951
+467659
+387239
+437465
+360923
+517566
+290506
+571665
+
+5 
+6 
+4 
+4 
+656 
+1 
+1 
+3 
+3 
+21 
+2 
+1 
+1
+1 
+1 
+17
+111
+3
+294
+202002
+3
+5450
+317853
+2247
 
 
