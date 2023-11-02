@@ -17,18 +17,18 @@ import re
 
 def get_args():
     parser = argparse.ArgumentParser(description="This program generates an output file from a sorted sam file without PCR replicates. This script does not take hard clipping into account.")
-    parser.add_argument("-f", "--filename", help="What is the filepath for the sam file to be read?", type=str)
-    parser.add_argument("-o", "--outputfile", help="What should this file to be called?", type=str)
-    parser.add_argument("-u", "--umifile", help="What is the filepath for the file that contains all of the UMIs?", type=str)
+    parser.add_argument("-f", "--file", help="What is the filepath for the sam file to be read?", type=str)
+    parser.add_argument("-o", "--outfile", help="What should this file to be called?", type=str)
+    parser.add_argument("-u", "--umi", help="What is the filepath for the file that contains all of the UMIs?", type=str)
     parser.add_argument("-s", "--summaryfile", help="What should the summary file be called?", type=str)
     parser.add_argument("-d", "--duplicatesfile", help="What should the duplicates file be called?", type=str)
     return parser.parse_args()
 
 args = get_args()
 
-sam = args.filename
-output = args.outputfile
-umis = args.umifile
+sam = args.file
+output = args.outfile
+umis = args.umi
 
 # Conditional statements making summary and duplicates files optional
 if args.summaryfile != None:
@@ -106,8 +106,8 @@ with open(umis) as umis:
 
 curChrom = 0
 duplicateHunter = {}
-preLineCount = -1
-postLineCount = -1
+preLineCount = 0
+postLineCount = 0
 
 # Opening files
 
