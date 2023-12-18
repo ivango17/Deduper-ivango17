@@ -1,5 +1,20 @@
 # Deduper
 
+## [VanGordon_deduper.py](./VanGordon_deduper.py)
+This script returns a sam file without PCR duplicates.
+
+The script requires the following:
+- **-f**: The sam file to be deduplicated (must be sorted by chromosome, then start position)
+- **-o**: The destination for the deduplicated sam file
+- **-u**: Text file containing all unique molecular identifier sequences (UMIs)
+
+
+The following are optional:
+- **-s**: The destination for the summary file showing number of duplicates and number of alignments for each chromosome
+- **-d**: The destination for the duplicate alignments to be written to
+
+**NOTE: This script does not account for hard clipping and assumes the UMI is at the end of the QNAME in the sorted sam file**
+
 ## Part 1
 Use this repo template to create your own Deduper repo - you should do all your work in your own repository. Please name it `Deduper-<github-user-name>`.
 

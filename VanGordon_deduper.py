@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
-
-# The purpose of this script is to take a sam file and remove all PCR replicates from a sorted sam file.
 # Author: Ian VanGordon
 # 10/15/2023
+
+'''
+This program generates an output file from a sorted sam file without PCR replicates. This script does not take hard clipping into account.
+'''
 
 
 import argparse
